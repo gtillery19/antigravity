@@ -1,0 +1,75 @@
+---
+title: "Exploring Storms"
+author: "gtillery19"
+execute:
+  echo: false
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+```
+
+```{r}
+#| label: storms-plot
+
+# Filter to the three main storm types, count per year, and plot as a stacked area chart
+storms |>
+  filter(status %in% c("tropical depression", "tropical storm", "hurricane")) |>
+  distinct(year, name, status) |>
+  count(year, status) |>
+  complete(year, status, fill = list(n = 0)) |>
+  mutate(status = factor(status, levels = c("tropical depression", "tropical storm", "hurricane"))) |>
+  ggplot(aes(x = year, y = n, fill = status)) +
+  geom_area(alpha = 0.85) +
+  scale_fill_manual(
+    values = c(
+      "tropical depression" = "lightblue",
+      "tropical storm" = "orange",
+      "hurricane" = "darkred"
+    )
+  ) +
+  labs(
+    title = "Atlantic Storms per Year by Storm Type",
+    subtitle = "Counts of tropical depressions, tropical storms, and hurricanes over time",
+    x = "Year",
+    y = "Number of Storms",
+    fill = "Storm Type",
+    caption = "Source: dplyr::storms dataset"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: print-storms
+#| cache: true
+
+# Save storms from 2000 onward with key columns into storms_recent
+storms_recent <- storms |>
+  filter(year >= 2000) |>
+  select(year, name, status, wind, pressure)
+```
+
+```{r}
+#| label: pressure-vs-wind
+
+# Scatter plot of atmospheric pressure vs. wind speed colored by storm status
+storms_recent |>
+  ggplot(aes(x = wind, y = pressure, color = status)) +
+  geom_point(alpha = 0.3) +
+  labs(
+    title = "Atmospheric Pressure vs. Wind Speed in Atlantic Storms (2000–Present)",
+    subtitle = "Hurricanes reach the highest wind speeds and lowest central pressures",
+    x = "Maximum Sustained Wind Speed (knots)",
+    y = "Air Pressure (millibars)",
+    color = "Storm Status",
+    caption = "Source: dplyr::storms dataset"
+  ) +
+  theme_minimal()
+```
+
+
+
+
